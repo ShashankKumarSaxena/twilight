@@ -31,6 +31,10 @@ pub enum Component {
     ActionRow(ActionRow),
     Button(Button),
     SelectMenu(SelectMenu),
+    /// Variant for components not yet known by the library at the time of release.
+    ///
+    /// This can only be received, not send
+    Unknown(u8)
 }
 
 impl Component {
@@ -59,6 +63,7 @@ impl Component {
             Self::ActionRow(_) => ComponentType::ActionRow,
             Self::Button(_) => ComponentType::Button,
             Self::SelectMenu(_) => ComponentType::SelectMenu,
+            Component::Unknown(unknown) => ComponentType::Unknown(*unknown)
         }
     }
 }
@@ -68,7 +73,7 @@ mod tests {
     use super::{
         button::{Button, ButtonStyle},
         select_menu::{SelectMenu, SelectMenuOption},
-        ActionRow, Component, ComponentType,
+        ActionRow, Component,
     };
     use serde_test::Token;
 
@@ -123,9 +128,9 @@ mod tests {
                 Token::Some,
                 Token::Str("test label"),
                 Token::Str("style"),
-                Token::U8(ButtonStyle::Primary as u8),
+                Token::U8(1),
                 Token::Str("type"),
-                Token::U8(ComponentType::Button as u8),
+                Token::U8(2),
                 Token::StructEnd,
                 Token::Struct {
                     name: "SelectMenu",
@@ -162,11 +167,11 @@ mod tests {
                 Token::Some,
                 Token::Str("test placeholder"),
                 Token::Str("type"),
-                Token::U8(ComponentType::SelectMenu as u8),
+                Token::U8(3),
                 Token::StructEnd,
                 Token::SeqEnd,
                 Token::Str("type"),
-                Token::U8(ComponentType::ActionRow as u8),
+                Token::U8(1),
                 Token::StructEnd,
             ],
         );

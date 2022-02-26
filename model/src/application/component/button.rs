@@ -5,7 +5,6 @@ use serde::{
     ser::{SerializeStruct, Serializer},
     Deserialize, Serialize,
 };
-use serde_repr::{Deserialize_repr, Serialize_repr};
 
 /// Clickable interactive components that render on messages.
 ///
@@ -43,34 +42,62 @@ pub struct Button {
 /// Refer to [the Discord Docs/Button Object] for additional information.
 ///
 /// [the Discord Docs/Button Object]: https://discord.com/developers/docs/interactions/message-components#button-object-button-styles
-#[derive(Clone, Copy, Debug, Deserialize_repr, Eq, Hash, PartialEq, PartialOrd, Serialize_repr)]
-#[repr(u8)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
+#[serde(from="u8", into="u8")]
 pub enum ButtonStyle {
     /// Button indicates a primary action.
     ///
     /// Selecting this button style requires specifying the
     /// [`Button::custom_id`] field.
-    Primary = 1,
+    Primary,
     /// Button indicates a secondary action.
     ///
     /// Selecting this button style requires specifying the
     /// [`Button::custom_id`] field.
-    Secondary = 2,
+    Secondary,
     /// Button indicates a successful action.
     ///
     /// Selecting this button style requires specifying the
     /// [`Button::custom_id`] field.
-    Success = 3,
+    Success,
     /// Button indicates a dangerous action.
     ///
     /// Selecting this button style requires specifying the
     /// [`Button::custom_id`] field.
-    Danger = 4,
+    Danger,
     /// Button indicates an action with a link.
     ///
     /// Selecting this button style requires specifying the [`Button::url`]
     /// field.
-    Link = 5,
+    Link,
+    /// Button has an unknown style not known to the library
+    Unknown(u8)
+}
+
+impl From<u8> for ButtonStyle {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => ButtonStyle::Primary,
+            2 => ButtonStyle::Secondary,
+            3 => ButtonStyle::Success,
+            4 => ButtonStyle::Danger,
+            5 => ButtonStyle::Link,
+            unknown => ButtonStyle::Unknown(unknown),
+        }
+    }
+}
+
+impl From<ButtonStyle> for u8 {
+    fn from(value: ButtonStyle) -> Self {
+        match value {
+            ButtonStyle::Primary => 1,
+            ButtonStyle::Secondary => 2,
+            ButtonStyle::Success => 3,
+            ButtonStyle::Danger => 4,
+            ButtonStyle::Link => 5,
+            ButtonStyle::Unknown(unknown) => unknown,
+        }
+    }
 }
 
 impl Serialize for Button {
@@ -118,10 +145,10 @@ mod tests {
     #![allow(clippy::non_ascii_literal)]
 
     use super::{Button, ButtonStyle};
-    use crate::{application::component::ComponentType, channel::ReactionType};
+    use crate::channel::ReactionType;
     use serde::{Deserialize, Serialize};
     use serde_test::Token;
-    use static_assertions::{assert_fields, assert_impl_all, const_assert_eq};
+    use static_assertions::{assert_fields, assert_impl_all};
     use std::{fmt::Debug, hash::Hash};
 
     assert_fields!(Button: custom_id, disabled, emoji, label, style, url);
@@ -149,11 +176,6 @@ mod tests {
         Serialize,
         Sync
     );
-    const_assert_eq!(1, ButtonStyle::Primary as u8);
-    const_assert_eq!(2, ButtonStyle::Secondary as u8);
-    const_assert_eq!(3, ButtonStyle::Success as u8);
-    const_assert_eq!(4, ButtonStyle::Danger as u8);
-    const_assert_eq!(5, ButtonStyle::Link as u8);
 
     #[test]
     fn test_button_style() {
@@ -207,9 +229,9 @@ mod tests {
                 Token::Some,
                 Token::String("Test"),
                 Token::String("style"),
-                Token::U8(ButtonStyle::Link as u8),
+                Token::U8(5),
                 Token::String("type"),
-                Token::U8(ComponentType::Button as u8),
+                Token::U8(2),
                 Token::String("url"),
                 Token::Some,
                 Token::String("https://twilight.rs"),

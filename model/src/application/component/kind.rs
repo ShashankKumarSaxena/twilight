@@ -1,30 +1,54 @@
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt::{Display, Formatter, Result as FmtResult};
-
+use serde::{Deserialize, Serialize};
 /// Type of Component.
 ///
 /// See [Discord Docs/Message Components].
 ///
 /// [Discord Docs/Message Components]: https://discord.com/developers/docs/interactions/message-components#component-types
 #[derive(
-    Clone, Copy, Debug, Deserialize_repr, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize_repr,
+    Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
 )]
-#[repr(u8)]
+#[serde(from="u8", into="u8")]
 pub enum ComponentType {
     /// Component is an [`ActionRow`].
     ///
     /// [`ActionRow`]: super::ActionRow
-    ActionRow = 1,
+    ActionRow,
 
     /// Component is an [`Button`].
     ///
     /// [`Button`]: super::Button
-    Button = 2,
+    Button,
 
     /// Component is an [`SelectMenu`].
     ///
     /// [`SelectMenu`]: super::SelectMenu
-    SelectMenu = 3,
+    SelectMenu,
+
+    /// Component is unknown
+    Unknown(u8)
+}
+
+impl From<u8> for ComponentType {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => ComponentType::ActionRow,
+            2 => ComponentType::Button,
+            3 => ComponentType::SelectMenu,
+            unknown => ComponentType::Unknown(unknown),
+        }
+    }
+}
+
+impl From<ComponentType> for u8 {
+    fn from(value: ComponentType) -> Self {
+        match value {
+            ComponentType::ActionRow => 1,
+            ComponentType::Button => 2,
+            ComponentType::SelectMenu => 3,
+            ComponentType::Unknown(unknown) => unknown
+        }
+    }
 }
 
 impl ComponentType {
@@ -48,6 +72,7 @@ impl ComponentType {
             Self::ActionRow => "ActionRow",
             Self::Button => "Button",
             Self::SelectMenu => "SelectMenu",
+            ComponentType::Unknown(_) =>"Unknown type",
         }
     }
 }
@@ -63,7 +88,7 @@ mod tests {
     use super::ComponentType;
     use serde::{Deserialize, Serialize};
     use serde_test::Token;
-    use static_assertions::{assert_impl_all, const_assert_eq};
+    use static_assertions::{assert_impl_all};
     use std::{fmt::Debug, hash::Hash};
 
     assert_impl_all!(
@@ -80,15 +105,13 @@ mod tests {
         Serialize,
         Sync
     );
-    const_assert_eq!(1, ComponentType::ActionRow as u8);
-    const_assert_eq!(2, ComponentType::Button as u8);
-    const_assert_eq!(3, ComponentType::SelectMenu as u8);
 
     #[test]
     fn test_variants() {
         serde_test::assert_tokens(&ComponentType::ActionRow, &[Token::U8(1)]);
         serde_test::assert_tokens(&ComponentType::Button, &[Token::U8(2)]);
         serde_test::assert_tokens(&ComponentType::SelectMenu, &[Token::U8(3)]);
+        serde_test::assert_tokens(&ComponentType::Unknown(99), &[Token::U8(99)]);
     }
 
     #[test]
@@ -96,5 +119,6 @@ mod tests {
         assert_eq!("ActionRow", ComponentType::ActionRow.name());
         assert_eq!("Button", ComponentType::Button.name());
         assert_eq!("SelectMenu", ComponentType::SelectMenu.name());
+        assert_eq!("Unknown type", ComponentType::Unknown(99).name());
     }
 }
