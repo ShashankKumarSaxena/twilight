@@ -19,7 +19,7 @@ pub struct ApplicationCommandAutocompleteDataOption {
 #[derive(
     Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
 )]
-#[serde(from="u8", into="u8")]
+#[serde(from = "u8", into = "u8")]
 pub enum ApplicationCommandAutocompleteDataOptionType {
     SubCommand,
     SubCommandGroup,

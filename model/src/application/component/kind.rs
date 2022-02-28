@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
 )]
-#[serde(from="u8", into="u8")]
+#[serde(from = "u8", into = "u8")]
 pub enum ComponentType {
     /// Component is an [`ActionRow`].
     ///
@@ -88,7 +88,7 @@ mod tests {
     use super::ComponentType;
     use serde::{Deserialize, Serialize};
     use serde_test::Token;
-    use static_assertions::{assert_impl_all};
+    use static_assertions::assert_impl_all;
     use std::{fmt::Debug, hash::Hash};
 
     assert_impl_all!(

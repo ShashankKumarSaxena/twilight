@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
 )]
-#[serde(from="u8", into="u8")]
+#[serde(from = "u8", into = "u8")]
 pub enum StickerFormatType {
     /// Sticker format is a PNG.
     Png,
